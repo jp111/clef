@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either  ress or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,12 +51,12 @@ import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.search.spans.SpanNearQuery;
 import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
-
+import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 
 /** Simple command-line based search demo. */
-public class SearchFiles {
+public class SearchFiles11 {
 
-  private SearchFiles() {}
+  private SearchFiles11() {}
 
   /** Simple command-line based search demo. */
   public static void main(String[] args) throws Exception {
@@ -84,104 +102,26 @@ public class SearchFiles {
         i++;
       }
     }
-
+    
     IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
     IndexSearcher searcher = new IndexSearcher(reader);
     Analyzer analyzer = new StandardAnalyzer();
 
+    StandardQueryParser queryParserHelper = new StandardQueryParser();
 
-    //System.out.println("Searching for: " + query.toString(field));
-    BooleanQuery.Builder bQuery = new BooleanQuery.Builder();
-    Query query1 = new TermQuery(new Term(field, "IQCODE"));
-    MultiPhraseQuery.Builder q2 = new MultiPhraseQuery.Builder();
-    q2.add(new Term(field, "informant questionnaire on cognitive decline in the elderly"));
-    MultiPhraseQuery query2= q2.build();
-    Query query3 = new TermQuery(new Term(field, "IQ code"));
-    //Query query4 = new TermQuery(new Term(field, ""));
-    //Query query5 = new TermQuery(new Term(field, ""));
-    Query query6 = new WildcardQuery(new Term(field, "informant* questionnair*"));
-    Query query7 = new WildcardQuery(new Term(field, "dement*"));
-    Query query8 = new WildcardQuery(new Term(field, "screening"));
-    
-    BooleanQuery.Builder b1 = new BooleanQuery.Builder();
-    b1.add(query7, BooleanClause.Occur.SHOULD);
-    b1.add(query8, BooleanClause.Occur.SHOULD);
-    
+    Query query = queryParserHelper.parse("Physical OR tests OR for OR shoulder OR impingements OR and OR local OR lesions OR of OR bursa, OR tendon OR labrum OR that OR may OR accompany OR impingement", field);
 
-    //SpanNearQuery.Builder query9 = new SpanNearQuery.Builder(field, 1);
-    //query9.addClause(SpanQuery());
-
-    String[] phraseWords = {"informant* questionnair*","dement*"};
-    SpanQuery[] queryParts = new SpanQuery[phraseWords.length];
-    for (int i = 0; i < phraseWords.length; i++) {
-        WildcardQuery wildQuery = new WildcardQuery(new Term(field, phraseWords[i]));
-        queryParts[i] = new SpanMultiTermQueryWrapper<WildcardQuery>(wildQuery);
-    }
-    SpanNearQuery span =  new SpanNearQuery(queryParts,       //words
-                             3,                //max distance
-                             true              //exact order
-    );
-
-    String[] phraseWords1 = {"informant* questionnair*","screening"};
-    SpanQuery[] queryParts1 = new SpanQuery[phraseWords1.length];
-    for (int i = 0; i < phraseWords1.length; i++) {
-        WildcardQuery wildQuery1 = new WildcardQuery(new Term(field, phraseWords1[i]));
-        queryParts1[i] = new SpanMultiTermQueryWrapper<WildcardQuery>(wildQuery1);
-    }
-    SpanNearQuery span1 =  new SpanNearQuery(queryParts1,       //words
-                             3,                //max distance
-                             true              //exact order
-    );
-
-    String[] phraseWords2 = {"screening test*","dement*"};
-    SpanQuery[] queryParts2 = new SpanQuery[phraseWords2.length];
-    for (int i = 0; i < phraseWords2.length; i++) {
-        WildcardQuery wildQuery2 = new WildcardQuery(new Term(field, phraseWords2[i]));
-        queryParts2[i] = new SpanMultiTermQueryWrapper<WildcardQuery>(wildQuery2);
-    }
-    SpanNearQuery span2 =  new SpanNearQuery(queryParts2,       //words
-                             2,                //max distance
-                             true              //exact order
-    );
-
-    String[] phraseWords3 = {"screening test*","alzheimer*"};
-    SpanQuery[] queryParts3 = new SpanQuery[phraseWords3.length];
-    for (int i = 0; i < phraseWords3.length; i++) {
-        WildcardQuery wildQuery3 = new WildcardQuery(new Term(field, phraseWords3[i]));
-        queryParts3[i] = new SpanMultiTermQueryWrapper<WildcardQuery>(wildQuery3);
-    }
-    SpanNearQuery span3 =  new SpanNearQuery(queryParts3,       //words
-                             2,                //max distance
-                             true              //exact order
-    );
-    bQuery.add(query1, BooleanClause.Occur.SHOULD);
-    bQuery.add(query2, BooleanClause.Occur.SHOULD);
-    bQuery.add(query3, BooleanClause.Occur.SHOULD);
-    bQuery.add(span, BooleanClause.Occur.SHOULD);
-    bQuery.add(span1, BooleanClause.Occur.SHOULD);
-    bQuery.add(span2, BooleanClause.Occur.SHOULD);
-    bQuery.add(span3, BooleanClause.Occur.SHOULD);
-
-    //bQuery.add(b1.build(), BooleanClause.Occur.SHOULD);
-    //bQuery.add(query6, BooleanClause.Occur.SHOULD);
-    //SpanQuery john   = new SpanTermQuery(new Term("content", "john"));
-    //SpanQuery kerry  = new SpanTermQuery(new Term("content", "kerry"));
-
-    //SpanQuery johnKerry = new SpanNearQuery(new SpanQuery[] {query7, query8}, 0, true);
-    System.out.println(bQuery.build().toString());
-    
-    TopDocs results = searcher.search(bQuery.build(), 150);
+    TopDocs results = searcher.search(query, 100);
     Date end = new Date();
     ScoreDoc[] hits = results.scoreDocs;
     int numTotalHits = results.totalHits;
 
-    String FILENAME = "/home/devil/research/CLEF/ehealth/task2/dataset/pubmed.res";
+    String FILENAME = "/home/devil/research/CLEF/ehealth/task2/dataset/pubmed11.res";
 
 
     int i = 1;
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILENAME))) 
     {
-
       String content = "";
       for (ScoreDoc h : hits) 
       {
@@ -190,7 +130,7 @@ public class SearchFiles {
         String[] path_words=path.split("/");
         System.out.println(path_words[path_words.length-1]+" score="+h.score);
 
-        content="CD010771 "+"NF "+path_words[path_words.length-1]+" "+i++ +" "+ h.score+" pubmed\n";
+        content="CD007427 "+"NF "+path_words[path_words.length-1]+" "+i++ +" "+ h.score+" pubmed\n";
 
         bw.write(content);
       }
